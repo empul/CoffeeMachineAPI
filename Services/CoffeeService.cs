@@ -7,16 +7,18 @@ namespace CoffeeMachineAPI.Services
         private int _callCounter = 0;
         private readonly object _lock = new object();
         private readonly IDateTimeProvider _dateTimeProvider;
+        private readonly IWeatherService _weatherService;
 
         // Constructor injection
-        public CoffeeService(IDateTimeProvider dateTimeProvider)
+        public CoffeeService(IDateTimeProvider dateTimeProvider, IWeatherService weatherService)
         {
             _dateTimeProvider = dateTimeProvider;
+            _weatherService = weatherService;
         }
 
         public bool IsAprilOne()
         {
-            var today = _dateTimeProvider.Now;
+            var today = _dateTimeProvider.Now;  // Now mockable!
             return today.Month == 4 && today.Day == 1;
         }
 
@@ -36,6 +38,17 @@ namespace CoffeeMachineAPI.Services
         public string GetCurrentTimestamp()
         {
             return _dateTimeProvider.Now.ToString("yyyy-MM-ddTHH:mm:sszzz");
+        }
+        public async Task<string> GetBrewMessageAsync()
+        {
+            var temperature = await _weatherService.GetCurrentTemperatureAsync();
+
+            if (temperature.HasValue && temperature.Value > 30)
+            {
+                return "Your refreshing iced coffee is ready";
+            }
+
+            return "Your piping hot coffee is ready";
         }
     }
 }
