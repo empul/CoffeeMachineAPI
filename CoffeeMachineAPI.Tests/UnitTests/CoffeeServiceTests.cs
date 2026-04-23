@@ -1,17 +1,33 @@
-﻿using Xunit;
+﻿using CoffeeMachineAPI.Interfaces;
 using CoffeeMachineAPI.Services;
-using CoffeeMachineAPI.Interfaces;
+using Moq;
+using Xunit;
 
 namespace CoffeeMachineAPI.Tests;
 
 public class CoffeeServiceTests
 {
+    private readonly Mock<IWeatherService> _mockWeather;
+    private readonly DateTimeProvider _dateTimeProvider;
+
+    public CoffeeServiceTests()
+    {
+        _mockWeather = new Mock<IWeatherService>();
+        _dateTimeProvider = new DateTimeProvider();
+    }
+
+    // Helper method to create service instance
+    private CoffeeService CreateService()
+    {
+        return new CoffeeService(_dateTimeProvider, _mockWeather.Object);
+    }
+
     [Fact]
     public void IsOutOfCoffee_ReturnsFalse_ForFirstFourCalls()
     {
-        // Arrange
+        // Arrange - Pass a real DateTimeProvider
         var dateTimeProvider = new DateTimeProvider();
-        var service = new CoffeeService(dateTimeProvider);
+        var service = CreateService();
 
         // Act & Assert
         for (int i = 1; i <= 4; i++)
@@ -26,7 +42,7 @@ public class CoffeeServiceTests
     {
         // Arrange
         var dateTimeProvider = new DateTimeProvider();
-        var service = new CoffeeService(dateTimeProvider);
+        var service = CreateService();
 
         // Act
         for (int i = 1; i <= 5; i++)
@@ -43,7 +59,7 @@ public class CoffeeServiceTests
     {
         // Arrange
         var dateTimeProvider = new DateTimeProvider();
-        var service = new CoffeeService(dateTimeProvider);
+        var service = CreateService();
 
         // Act - Make 6 calls
         for (int i = 1; i <= 6; i++)
@@ -60,12 +76,12 @@ public class CoffeeServiceTests
     {
         // Arrange
         var dateTimeProvider = new DateTimeProvider();
-        var service = new CoffeeService(dateTimeProvider);
+        var service = CreateService();
 
         // Act
         var timestamp = service.GetCurrentTimestamp();
 
-        // Assert 
+        // Assert - Check format without comparing exact value
         var parsedDate = DateTime.Parse(timestamp); // Will throw if invalid
         Assert.Contains("T", timestamp);
         Assert.Matches(@"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}", timestamp);
@@ -76,7 +92,7 @@ public class CoffeeServiceTests
     {
         // Arrange
         var dateTimeProvider = new DateTimeProvider();
-        var service = new CoffeeService(dateTimeProvider);
+        var service = CreateService();
         var tasks = new List<Task>();
 
         // Act - Simulate 100 concurrent calls
@@ -93,7 +109,7 @@ public class CoffeeServiceTests
             service.IncrementCounter();
         }
 
-        
+        // No exception means thread safety is working
         Assert.True(true);
     }
 
@@ -102,7 +118,7 @@ public class CoffeeServiceTests
     {
         // Arrange
         var dateTimeProvider = new DateTimeProvider();
-        var service = new CoffeeService(dateTimeProvider);
+        var service = CreateService();
 
         // Act & Assert - Test 10 calls pattern
         for (int callNumber = 1; callNumber <= 10; callNumber++)

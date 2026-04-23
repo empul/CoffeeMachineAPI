@@ -1,17 +1,30 @@
-﻿using Xunit;
+﻿using CoffeeMachineAPI.Interfaces;
 using CoffeeMachineAPI.Services;
-using CoffeeMachineAPI.Interfaces;
+using Moq;
+using Xunit;
 
 namespace CoffeeMachineAPI.Tests;
 
 public class CoffeeServiceAprilOneTests
 {
+    private readonly Mock<IWeatherService> _mockWeather;
+
+    public CoffeeServiceAprilOneTests()
+    {
+        _mockWeather = new Mock<IWeatherService>();
+    }
+
+    private CoffeeService CreateService(IDateTimeProvider dateTimeProvider)
+    {
+        return new CoffeeService(dateTimeProvider, _mockWeather.Object);
+    }
+
     [Fact]
     public void IsAprilOne_ReturnsTrue_OnAprilFirst()
     {
         // Arrange - Mock April 1st
         var mockDate = new MockDateTimeProvider(new DateTime(2024, 4, 1));
-        var service = new CoffeeService(mockDate);
+        var service = CreateService(mockDate);
 
         // Act
         var result = service.IsAprilOne();
@@ -25,7 +38,7 @@ public class CoffeeServiceAprilOneTests
     {
         // Arrange - Mock June 15th (not April 1st)
         var mockDate = new MockDateTimeProvider(new DateTime(2024, 6, 15));
-        var service = new CoffeeService(mockDate);
+        var service = CreateService(mockDate);
 
         // Act
         var result = service.IsAprilOne();
@@ -40,7 +53,7 @@ public class CoffeeServiceAprilOneTests
         // Arrange - Mock a specific date
         var expectedDate = new DateTime(2024, 12, 25, 14, 30, 0);
         var mockDate = new MockDateTimeProvider(expectedDate);
-        var service = new CoffeeService(mockDate);
+        var service = CreateService(mockDate);
 
         // Act
         var timestamp = service.GetCurrentTimestamp();
