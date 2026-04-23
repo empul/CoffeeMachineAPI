@@ -6,5 +6,6 @@
         bool IsOutOfCoffee();
         void IncrementCounter();
         string GetCurrentTimestamp();
+        Task<string> GetBrewMessageAsync();
     }
 }
